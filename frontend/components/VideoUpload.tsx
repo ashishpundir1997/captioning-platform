@@ -20,7 +20,8 @@ export default function VideoUpload({ onUpload, disabled }: VideoUploadProps) {
   };
 
   return (
-    <div className="upload-container">
+    <div className="card">
+      <h2 style={{ color: 'var(--text-color)' }}>Video Upload</h2>
       <input
         ref={fileInputRef}
         type="file"

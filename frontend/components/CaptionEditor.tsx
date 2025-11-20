@@ -38,7 +38,8 @@ export default function CaptionEditor({ captions, onUpdate }: CaptionEditorProps
   };
 
   return (
-    <div className="caption-editor">
+    <div className="card">
+      <h2 style={{ color: 'var(--text-color)' }}>Caption Editor</h2>
       <div className="captions-list">
         {captions.map((caption) => (
           <div key={caption.id} className="caption-item">

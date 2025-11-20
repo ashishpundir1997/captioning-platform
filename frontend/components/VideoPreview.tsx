@@ -101,7 +101,8 @@ export default function VideoPreview({ filename, videoId, videoUrl, captions, st
   };
 
   return (
-    <div className="video-preview">
+    <div className="card">
+      <h2 style={{ color: 'var(--text-color)' }}>Video Preview</h2>
       <div className="video-container">
         <video
           ref={videoRef}
