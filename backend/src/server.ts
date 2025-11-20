@@ -14,7 +14,7 @@ const envPath = process.env.NODE_ENV === 'production'
 dotenv.config({ path: envPath });
 
 const app = express();
-const PORT = process.env.PORT || process.env.BACKEND_PORT || 5000;
+const PORT = parseInt(process.env.PORT || process.env.BACKEND_PORT || '5000', 10);
 
 // Middleware
 app.use(cors());
@@ -46,8 +46,8 @@ app.use((err: any, req: express.Request, res: express.Response, next: express.Ne
   });
 });
 
-app.listen(PORT, () => {
-  console.log(`🚀 Backend server running on http://localhost:${PORT}`);
+app.listen(PORT, '0.0.0.0', () => {
+  console.log(`🚀 Backend server running on port ${PORT}`);
   console.log(`📁 Uploads directory: ${uploadsDir}`);
 });
 
