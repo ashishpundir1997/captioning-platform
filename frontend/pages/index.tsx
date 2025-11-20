@@ -15,6 +15,7 @@ export default function Home() {
   } | null>(null);
   const [captions, setCaptions] = useState<Caption[]>([]);
   const [isGenerating, setIsGenerating] = useState(false);
+  const [isUploading, setIsUploading] = useState(false);
   const [captionStyle, setCaptionStyle] = useState<CaptionStyle>('bottom');
   const [error, setError] = useState<string | null>(null);
   const [captionId, setCaptionId] = useState<string | null>(null);
@@ -22,6 +23,7 @@ export default function Home() {
   const handleVideoUpload = async (file: File) => {
     try {
       setError(null);
+      setIsUploading(true);
       console.log('Uploading video:', file.name);
       
       const response = await uploadVideo(file);
@@ -39,6 +41,9 @@ export default function Home() {
     } catch (err: any) {
       console.error('Upload error:', err);
       setError(err.response?.data?.error || err.message || 'Failed to upload video');
+    }
+    finally {
+      setIsUploading(false);
     }
   };
 
@@ -105,7 +110,7 @@ export default function Home() {
           {/* Step 1: Upload */}
           <section className="step">
             <h2>Step 1: Upload Video</h2>
-            <VideoUpload onUpload={handleVideoUpload} disabled={!!uploadedFile} />
+            <VideoUpload onUpload={handleVideoUpload} disabled={!!uploadedFile} isLoading={isUploading} />
             {uploadedFile && (
               <div className="upload-success">
                 ✅ Uploaded: <strong>{uploadedFile.originalName}</strong>
@@ -126,7 +131,8 @@ export default function Home() {
                   disabled={isGenerating || captions.length > 0}
                   className="btn-primary"
                 >
-                  {isGenerating ? '⏳ Generating Captions...' : '🤖 Auto-Generate Captions'}
+                  {isGenerating && <span className="spinner" aria-hidden="true"></span>}
+                  {isGenerating ? 'Generating Captions...' : '🤖 Auto-Generate Captions'}
                 </button>
                 
                 {captions.length > 0 && (

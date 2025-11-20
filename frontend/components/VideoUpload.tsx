@@ -2,10 +2,11 @@ import { useRef, ChangeEvent } from 'react';
 
 interface VideoUploadProps {
   onUpload: (file: File) => void;
-  disabled?: boolean;
+  disabled?: boolean; // disabled after successful upload
+  isLoading?: boolean; // loading while upload in progress
 }
 
-export default function VideoUpload({ onUpload, disabled }: VideoUploadProps) {
+export default function VideoUpload({ onUpload, disabled, isLoading }: VideoUploadProps) {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleFileChange = (e: ChangeEvent<HTMLInputElement>) => {
@@ -28,14 +29,21 @@ export default function VideoUpload({ onUpload, disabled }: VideoUploadProps) {
         accept="video/mp4,video/mpeg,video/quicktime"
         onChange={handleFileChange}
         style={{ display: 'none' }}
-        disabled={disabled}
+        disabled={disabled || isLoading}
       />
       <button
         onClick={handleClick}
-        disabled={disabled}
+        disabled={disabled || isLoading}
         className="btn-upload"
       >
-        {disabled ? '✅ Video Uploaded' : '📁 Choose Video File (.mp4)'}
+        {isLoading && !disabled && (
+          <span className="spinner" aria-hidden="true"></span>
+        )}
+        {disabled
+          ? '✅ Video Uploaded'
+          : isLoading
+            ? 'Uploading...'
+            : '📁 Choose Video File (.mp4)'}
       </button>
       <p className="upload-note">
         Supported formats: MP4, MPEG, MOV | Max size: 100MB
