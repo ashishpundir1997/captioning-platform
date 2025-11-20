@@ -1,4 +1,8 @@
-export const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5001';
+// Normalize API base URL: allow plain domain without protocol
+const rawApi = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5001';
+export const API_BASE_URL = rawApi.startsWith('http://') || rawApi.startsWith('https://')
+  ? rawApi
+  : `https://${rawApi}`;
 
 export const API_ENDPOINTS = {
   UPLOAD: `${API_BASE_URL}/api/upload`,
