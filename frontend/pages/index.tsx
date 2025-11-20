@@ -29,7 +29,7 @@ export default function Home() {
       if (response.success) {
         console.log('Upload response:', response); // Debug log
         setUploadedFile({
-          videoId: response.videoId || response.file.id, // Use videoId or file.id from Supabase
+          videoId: response.videoId || response.file.id || '', // Use videoId or file.id from Supabase
           filename: response.file.filename,
           originalName: response.file.originalName || response.file.filename,
           path: response.publicUrl || response.file.path, // Use publicUrl from Supabase
