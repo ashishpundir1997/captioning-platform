@@ -44,8 +44,10 @@ router.post('/export', async (req: Request, res: Response) => {
     const videoUrl = video.file_path;
     console.log('📹 Video URL:', videoUrl);
 
-    // Path to the frontend Remotion project
-    const frontendPath = path.join(__dirname, '../../../frontend');
+    // Path to the backend's Remotion SOURCE files (bundler needs .ts files, not compiled .js)
+    // In production: __dirname = /app/dist/routes, so ../../src/remotion
+    // In development: __dirname = /path/backend/dist/routes, so ../../src/remotion
+    const remotionPath = path.join(__dirname, '../../src/remotion');
     const outputFileName = `${video.original_filename.replace(/\.[^/.]+$/, '')}-captioned-${Date.now()}.mp4`;
     const outputPath = path.join(__dirname, '../../uploads', outputFileName);
 
@@ -61,7 +63,7 @@ router.post('/export', async (req: Request, res: Response) => {
     } else {
       console.log('📦 Bundling Remotion project (first time only)...');
       bundleLocation = await bundle({
-        entryPoint: path.join(frontendPath, 'remotion/index.ts'),
+        entryPoint: path.join(remotionPath, 'index.ts'),
         webpackOverride: (config) => config,
       });
       cachedBundleLocation = bundleLocation;

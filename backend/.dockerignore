@@ -1,0 +1,14 @@
+# Don't include these in Docker builds
+node_modules
+npm-debug.log
+.env.local
+.git
+.gitignore
+README.md
+uploads/*
+!uploads/.gitkeep
+dist
+build
+
+# But DO include src/ for Remotion bundler
+!src/
