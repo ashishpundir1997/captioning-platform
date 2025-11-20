@@ -1,0 +1,147 @@
+import { Router, Request, Response } from 'express';
+import path from 'path';
+import fs from 'fs-extra';
+import { bundle } from '@remotion/bundler';
+import { renderMedia, selectComposition } from '@remotion/renderer';
+import { Caption } from './captions';
+import { VideoService } from '../services/videoService';
+import { supabase } from '../config/supabase';
+
+const router = Router();
+const videoService = new VideoService();
+
+// Cache the bundle location to avoid re-bundling
+let cachedBundleLocation: string | null = null;
+
+export interface RenderRequest {
+  videoId: string;  // Changed from filename to videoId
+  captions: Caption[];
+  style: string;
+}
+
+// POST /api/render/export - Render video with captions to MP4
+router.post('/export', async (req: Request, res: Response) => {
+  try {
+    const { videoId, captions, style } = req.body as RenderRequest;
+
+    if (!videoId || !captions || !style) {
+      return res.status(400).json({ 
+        error: 'Video ID, captions, and style are required' 
+      });
+    }
+
+    // Get video from database
+    const video: any = await videoService.getVideoById(videoId);
+    if (!video) {
+      return res.status(404).json({ error: 'Video file not found' });
+    }
+
+    console.log('🎬 Starting FAST video render for:', video.original_filename);
+    console.log('📝 Caption count:', captions.length);
+    console.log('🎨 Style:', style);
+
+    // Use the Supabase public URL directly
+    const videoUrl = video.file_path;
+    console.log('📹 Video URL:', videoUrl);
+
+    // Path to the frontend Remotion project
+    const frontendPath = path.join(__dirname, '../../../frontend');
+    const outputFileName = `${video.original_filename.replace(/\.[^/.]+$/, '')}-captioned-${Date.now()}.mp4`;
+    const outputPath = path.join(__dirname, '../../uploads', outputFileName);
+
+    // Ensure uploads directory exists
+    await fs.ensureDir(path.dirname(outputPath));
+
+    // Bundle the Remotion project (with caching for SPEED)
+    let bundleLocation: string;
+    
+    if (cachedBundleLocation && await fs.pathExists(cachedBundleLocation)) {
+      console.log('⚡ Using cached bundle (FAST!)');
+      bundleLocation = cachedBundleLocation;
+    } else {
+      console.log('📦 Bundling Remotion project (first time only)...');
+      bundleLocation = await bundle({
+        entryPoint: path.join(frontendPath, 'remotion/index.ts'),
+        webpackOverride: (config) => config,
+      });
+      cachedBundleLocation = bundleLocation;
+      console.log('✅ Bundle created and cached for future renders');
+    }
+
+    // Get composition
+    const composition = await selectComposition({
+      serveUrl: bundleLocation,
+      id: 'VideoWithCaptions',
+      inputProps: {
+        videoSrc: videoUrl,  // Use Supabase public URL
+        captions,
+        style,
+      },
+    });
+
+    console.log('🎥 Composition selected:', composition.id);
+    console.log('⏱️  Duration:', composition.durationInFrames, 'frames');
+    console.log('📐 Dimensions:', composition.width, 'x', composition.height);
+
+    // Render the video with MAXIMUM SPEED optimizations
+    console.log('🎬 Rendering video with SPEED optimizations...');
+    const startTime = Date.now();
+    
+    await renderMedia({
+      composition,
+      serveUrl: bundleLocation,
+      codec: 'h264',
+      outputLocation: outputPath,
+      inputProps: {
+        videoSrc: videoUrl,
+        captions,
+        style,
+      },
+      // MAXIMUM PERFORMANCE SETTINGS
+      concurrency: 8,  // Use 8 parallel browsers for speed
+      imageFormat: 'jpeg',
+      jpegQuality: 80,
+      enforceAudioTrack: false,  // Skip if no audio needed
+      chromiumOptions: {
+        gl: 'angle',  // Use GPU acceleration (faster than swiftshader)
+        headless: true,
+        ignoreCertificateErrors: true,
+      },
+      // Faster encoding settings
+      videoBitrate: '5M',  // Lower bitrate = faster encoding
+      scale: 1,  // No scaling
+      muted: false,
+      numberOfGifLoops: null,
+      everyNthFrame: 1,  // Render every frame
+      frameRange: null,
+      envVariables: {},
+      onProgress: ({ progress, renderedFrames, encodedFrames, stitchStage }) => {
+        const percent = (progress * 100).toFixed(1);
+        if (renderedFrames % 30 === 0 || progress === 1) {  // Log every 30 frames
+          console.log(`⚡ ${stitchStage === 'encoding' ? 'Encoding' : 'Rendering'}: ${percent}% (${renderedFrames}/${composition.durationInFrames} frames)`);
+        }
+      },
+    });
+
+    const renderTime = ((Date.now() - startTime) / 1000).toFixed(1);
+    console.log(`✅ Video rendered in ${renderTime}s!`);
+    console.log('📦 Bundle kept in cache for next render');
+
+    // NO SUPABASE UPLOAD - Just serve directly from local file for speed
+    res.json({
+      success: true,
+      message: 'Video rendered successfully',
+      filename: outputFileName,
+      path: `/uploads/${outputFileName}`,
+      downloadUrl: `http://localhost:${process.env.BACKEND_PORT || 5000}/uploads/${outputFileName}`,
+    });
+  } catch (error: any) {
+    console.error('❌ Render error:', error);
+    res.status(500).json({
+      error: 'Failed to render video',
+      details: error.message,
+    });
+  }
+});
+
+export default router;
