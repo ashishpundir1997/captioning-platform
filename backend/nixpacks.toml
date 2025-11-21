@@ -1,0 +1,37 @@
+[phases.setup]
+nixPkgs = [
+  'nodejs_20',
+  # Chrome/Puppeteer dependencies
+  'glib',
+  'nss',
+  'nspr',
+  'atk',
+  'at-spi2-atk',
+  'cups',
+  'dbus',
+  'libdrm',
+  'libxkbcommon',
+  'pango',
+  'cairo',
+  'mesa',
+  'expat',
+  'libxcomposite',
+  'libxdamage',
+  'libxfixes',
+  'libxrandr',
+  'libgbm',
+  'alsa-lib',
+  'xorg.libX11',
+  'xorg.libxcb',
+  'xorg.libXext',
+  'xorg.libXrender'
+]
+
+[phases.install]
+cmds = ['npm ci']
+
+[phases.build]
+cmds = ['npm run build']
+
+[start]
+cmd = 'npm start'

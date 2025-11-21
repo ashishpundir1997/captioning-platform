@@ -106,6 +106,23 @@ router.post('/export', async (req: Request, res: Response) => {
     console.log('🎬 Rendering video with SPEED optimizations...');
     const startTime = Date.now();
     
+    // Set Chrome flags for production/Railway environment
+    const isProduction = process.env.NODE_ENV === 'production';
+    const chromeFlags = isProduction ? [
+      '--no-sandbox',
+      '--disable-setuid-sandbox',
+      '--disable-dev-shm-usage',
+      '--disable-accelerated-2d-canvas',
+      '--no-first-run',
+      '--no-zygote',
+      '--disable-gpu',
+    ] : [];
+    
+    // Set environment variables for Chrome
+    if (isProduction && chromeFlags.length > 0) {
+      process.env.CHROMIUM_FLAGS = chromeFlags.join(' ');
+    }
+    
     await renderMedia({
       composition,
       serveUrl: bundleLocation,
@@ -117,15 +134,18 @@ router.post('/export', async (req: Request, res: Response) => {
         style,
       },
       // MAXIMUM PERFORMANCE SETTINGS
-      concurrency: 8,  // Use 8 parallel browsers for speed
+      concurrency: isProduction ? 2 : 8,  // Lower concurrency in production to avoid memory issues
       imageFormat: 'jpeg',
       jpegQuality: 80,
       enforceAudioTrack: false,  // Skip if no audio needed
       chromiumOptions: {
-        gl: 'angle',  // Use GPU acceleration (faster than swiftshader)
+        gl: isProduction ? 'swiftshader' : 'angle',  // Use swiftshader in production (no GPU)
         headless: true,
         ignoreCertificateErrors: true,
       },
+      // Chrome flags for Railway/Docker environments
+      puppeteerInstance: undefined,
+      browserExecutable: undefined,
       // Faster encoding settings
       videoBitrate: '5M',  // Lower bitrate = faster encoding
       scale: 1,  // No scaling
