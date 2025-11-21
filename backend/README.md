@@ -29,16 +29,16 @@ See `.env.example` for required configuration.
 
 ## Deployment
 
-### Railway
+### Render
 ```bash
 # Install Railway CLI
-npm install -g @railway/cli
+npm install render
 
 # Login
-railway login
+render login
 
 # Deploy
-railway up
+render
 ```
 
 ### Render / Heroku / DigitalOcean
