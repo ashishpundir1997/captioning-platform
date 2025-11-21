@@ -45,9 +45,26 @@ router.post('/export', async (req: Request, res: Response) => {
     console.log('📹 Video URL:', videoUrl);
 
     // Path to the backend's Remotion SOURCE files (bundler needs .ts files, not compiled .js)
-    // In production: __dirname = /app/dist/routes, so ../../src/remotion
+    // In production: __dirname = /app/dist/routes, so ../remotion (copied during build)
     // In development: __dirname = /path/backend/dist/routes, so ../../src/remotion
-    const remotionPath = path.join(__dirname, '../../src/remotion');
+    const srcRemotionPath = path.join(__dirname, '../../src/remotion');
+    const distRemotionPath = path.join(__dirname, '../remotion');
+    
+    // Use src/remotion if it exists (development), otherwise use dist/remotion (production)
+    const remotionPath = await fs.pathExists(srcRemotionPath) ? srcRemotionPath : distRemotionPath;
+    
+    console.log('🔍 Remotion path check:');
+    console.log('  __dirname:', __dirname);
+    console.log('  srcRemotionPath:', srcRemotionPath, '- exists:', await fs.pathExists(srcRemotionPath));
+    console.log('  distRemotionPath:', distRemotionPath, '- exists:', await fs.pathExists(distRemotionPath));
+    console.log('  Using:', remotionPath);
+    
+    // Verify the entry point exists
+    const entryPoint = path.join(remotionPath, 'index.ts');
+    if (!await fs.pathExists(entryPoint)) {
+      throw new Error(`Remotion entry point not found at ${entryPoint}. Make sure Remotion files are copied during build.`);
+    }
+    
     const outputFileName = `${video.original_filename.replace(/\.[^/.]+$/, '')}-captioned-${Date.now()}.mp4`;
     const outputPath = path.join(__dirname, '../../uploads', outputFileName);
 
@@ -63,7 +80,7 @@ router.post('/export', async (req: Request, res: Response) => {
     } else {
       console.log('📦 Bundling Remotion project (first time only)...');
       bundleLocation = await bundle({
-        entryPoint: path.join(remotionPath, 'index.ts'),
+        entryPoint,
         webpackOverride: (config) => config,
       });
       cachedBundleLocation = bundleLocation;

@@ -8,7 +8,7 @@
   },
   "scripts": {
     "dev": "ts-node-dev --respawn --transpile-only src/server.ts",
-    "build": "tsc",
+    "build": "tsc && mkdir -p dist/remotion && cp -r src/remotion/* dist/remotion/",
     "start": "node dist/server.js",
     "clean": "rm -rf dist"
   },
