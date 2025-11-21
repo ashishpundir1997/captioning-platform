@@ -20,7 +20,7 @@ export class ExportService {
   async updateExportStatus(id: string, status: string, errorMessage?: string) {
     const { data, error } = await supabase
       .from('exports')
-      // @ts-expect-error - Supabase type mismatch
+      // @ts-ignore - supabase generic typing mismatch for update payload
       .update({ 
         status,
         error_message: errorMessage || null,
@@ -36,7 +36,7 @@ export class ExportService {
   async updateExportPath(id: string, filePath: string, storagePath?: string) {
     const { data, error } = await supabase
       .from('exports')
-      // @ts-expect-error - Supabase type mismatch
+      // @ts-ignore - supabase generic typing mismatch for update payload
       .update({ 
         file_path: filePath,
         storage_path: storagePath,

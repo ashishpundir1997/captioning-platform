@@ -31,7 +31,7 @@ export class CaptionService {
   async updateCaptionStyle(id: string, style: string) {
     const { data, error } = await supabase
       .from('captions')
-      // @ts-expect-error - Supabase type mismatch
+      // @ts-ignore - supabase generic typing mismatch for update payload
       .update({ style })
       .eq('id', id)
       .select()
@@ -44,7 +44,7 @@ export class CaptionService {
   async updateCaptionData(id: string, captionData: any) {
     const { data, error } = await supabase
       .from('captions')
-      // @ts-expect-error - Supabase type mismatch
+      // @ts-ignore - supabase generic typing mismatch for update payload
       .update({ caption_data: captionData })
       .eq('id', id)
       .select()

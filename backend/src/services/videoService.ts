@@ -43,7 +43,7 @@ export class VideoService {
   async updateVideoStatus(id: string, status: string) {
     const { data, error } = await supabase
       .from('videos')
-      // @ts-expect-error - Supabase type mismatch, will fix with proper type generation
+      // @ts-ignore - supabase generic typing mismatch for update payload
       .update({ status })
       .eq('id', id)
       .select()

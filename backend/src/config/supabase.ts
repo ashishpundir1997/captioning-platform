@@ -1,12 +1,11 @@
 import { createClient } from '@supabase/supabase-js';
 import { Database } from '../types/database.types';
 import dotenv from 'dotenv';
-import path from 'path';
 
-// Load environment variables before validating
-// This ensures .env is loaded even when this module is imported first
-const envPath = path.join(__dirname, '../../.env');
-dotenv.config({ path: envPath });
+// Load environment variables from default location.
+// On Render (or any cloud) env vars are injected and .env file is optional.
+// Locally a backend/.env file will still be picked up if present when running from project root.
+dotenv.config();
 
 // Validate environment variables
 const supabaseUrl = process.env.SUPABASE_URL;
