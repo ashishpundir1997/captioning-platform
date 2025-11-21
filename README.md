@@ -30,7 +30,7 @@ cp .env.example .env
 
 Edit `.env`:
 ```env
-OPENAI_API_KEY=sk-your-key-here
+ASSEMBLYAI_API_KEY=sk-your-key-here
 BACKEND_PORT=5000
 NEXT_PUBLIC_API_URL=http://localhost:5000
 ```
@@ -81,8 +81,8 @@ npm install
 - Check port 5000 availability
 - Verify `.env` configuration
 
-**Whisper API errors:**
-- Confirm OpenAI API key is valid
+**Assembly API errors:**
+- Confirm Assembly API key is valid
 - Ensure account has credits
 
 ## 📄 License
